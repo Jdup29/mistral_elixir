@@ -10,13 +10,15 @@ defmodule MistralClient do
   alias MistralClient.Models
   alias MistralClient.Chat
   alias MistralClient.Embeddings
-  
+  alias MistralClient.Agent
+  alias MistralClient.Conversation
+
   def start(_type, _args) do
     children = [Config]
     opts = [strategy: :one_for_one, name: MistralClient.Supervisor]
 
     Supervisor.start_link(children, opts)
-  end  
+  end
 
   @doc """
   Retrieve the list of available models
@@ -24,7 +26,7 @@ defmodule MistralClient do
   ```elixir
   MistralClient.models()
   ```
-  
+
   ## Example response
   ```elixir
   {:ok,
@@ -50,7 +52,7 @@ defmodule MistralClient do
     }
   }
   ```
-  
+
   See: https://docs.mistral.ai/api#operation/listModels
   """
 
@@ -58,7 +60,7 @@ defmodule MistralClient do
 
   @doc """
   Creates a completion for the chat message
-  
+
   ## Example request
   ```elixir
   MistralClient.chat(
@@ -71,7 +73,7 @@ defmodule MistralClient do
     ]
   )
   ```
-  
+
   ## Example response
   ```elixir
   {:ok,
@@ -98,9 +100,9 @@ defmodule MistralClient do
    }
   }
   ```
-  
+
   N.B. to use "stream" mode you must be set http_options as below when you want to treat the chat completion as a stream. You may also pass in the api_key in the same way, or define in the config.exs of your elixir project.
-  
+
   ## Example request (stream)
   ```elixir
   MistralClient.chat(
@@ -118,7 +120,7 @@ defmodule MistralClient do
   end)
   |> Stream.run()
   ```
-  
+
   ## Example response (stream)
   ```elixir
   %{
@@ -161,7 +163,7 @@ defmodule MistralClient do
     "object" => "chat.completion.chunk"
   }
   ```
-  
+
   See: https://docs.mistral.ai/api#operation/createChatCompletion for the complete list of parameters you can pass to the chat function
   """
 
@@ -171,7 +173,7 @@ defmodule MistralClient do
 
 @doc """
   Creates an embedding vector representing the input text.
-  
+
   ## Example request
   ```elixir
   MistralClient.embeddings(
@@ -182,7 +184,7 @@ defmodule MistralClient do
     ]
   )
   ```
-  
+
   ## Example response
   ```elixir
   {:ok,
@@ -237,17 +239,17 @@ defmodule MistralClient do
     }
   }}
   ```
-  
+
   See: https://docs.mistral.ai/api#operation/createEmbedding
   """
 
   def embeddings(params, config \\ Config.config(%{})) do
     Embeddings.fetch(params, config)
-  end  
+  end
 
   @doc """
   Generates the config settings from the given params, using the defaults defined in the application's config.exs if not passed in params.
-  
+
   ## Example request
   ```elixir
   MistralClient.config(
@@ -260,6 +262,13 @@ defmodule MistralClient do
   ```
   """
 
+  def agent(params, config \\ Config.config(%{})) do
+    Agent.fetch(params, config)
+  end
+  def conversation(params, config \\ Config.config(%{})) do
+    Conversation.fetch(params, config)
+  end
+
   def config(params) do
     opts = case params do
 	     params_list when is_list(params_list) ->
@@ -268,5 +277,5 @@ defmodule MistralClient do
 	   end
     Config.config(opts)
   end
-  
+
 end
